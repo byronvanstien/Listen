@@ -1,5 +1,9 @@
-# Unrelated to anything
+# Stuff related to the library
+LIBRARY_URL = "https://github.com/GetRektByMe/Listen"
+
+# Unrelated to anything we can use
 BASE_URL = "https://listen.moe/api/"
+
 AUTH_URL = BASE_URL + "authenticate"
 
 # Account endpoints
