@@ -1,9 +1,9 @@
 import json
 import aiohttp
 
-from .objects import User, Song
-from .utils import ensure_token
-from .constants import (
+from listen.objects import User, Song
+from listen.utils import ensure_token
+from listen.constants import (
     AUTH_URL,
     USER,
     USER_FAVOURITES,

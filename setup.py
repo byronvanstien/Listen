@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
-from pyanimelist.constants import LIBRARY_URL
-from pyanimelist import (
+from listen.constants import LIBRARY_URL
+from listen import (
     __license__ as license,
     __author__ as author,
     __title__ as title,
