@@ -1,6 +1,7 @@
 import json
 import aiohttp
 
+from listen.errors import ListenError
 from listen.objects import User, Song
 from listen.utils import ensure_token
 from listen.constants import (
@@ -28,34 +29,32 @@ class Client(object):
         return self._user_agent
 
     async def get_token(self, username: str, password: str):
-        """|coro|
-        Returns::
-        self._headers[token] :: str
+        """
+        :param str username: The username of the account you're getting the token for
+        :param str password: The password of the account you're getting the token for
+        :rtype: str
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.post(AUTH_URL, data=json.dumps({"username": username, "password": password})) as response:
                 resp_data = await response.json()
                 if not resp_data["success"]:
-                    raise Exception(resp_data["message"])
+                    raise ListenError(resp_data["message"])
                 self._headers["authorization"] = resp_data["token"]
                 return self._headers["authorization"]
 
     @ensure_token
     async def get_info(self):
-        """|coro|
-        Returns::
-        user :: User
+        """
+        :rtype: :class:`listen.objects.User`
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.get(USER) as response:
-                info = await response.json()
-                return User(**info)
+                return User(**(await response.json()))
 
     @ensure_token
     async def get_favorites(self):
-        """|coro|
-        Returns::
-        songs :: list[Song]
+        """
+        :rtype :class:`listen.objects.Song`
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.get(USER_FAVOURITES) as response:
@@ -67,9 +66,9 @@ class Client(object):
 
     @ensure_token
     async def favorite_toggle(self, song_id: int):
-        """|coro|
-        Returns ::
-        boolean :: bool
+        """
+        :param int song_id: The id of the song you want to favourite
+        :rtype bool:
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.post(SONG_FAVOURITES, data=json.dumps({"song": song_id})) as response:
@@ -78,8 +77,9 @@ class Client(object):
 
     @ensure_token
     async def make_request(self, song_id: int):
-        """|coro|
-        requested :: bool
+        """
+        :param int song_id: The id of the song you want to request
+        :rtype bool:
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.post(SONG_REQUEST, data=json.dumps({"song": song_id})) as response:
