@@ -1,5 +1,8 @@
 import json
+import asyncio
+
 import aiohttp
+import websockets
 
 from listen.errors import ListenError
 from listen.objects import User, Song
@@ -9,7 +12,8 @@ from listen.constants import (
     USER,
     USER_FAVOURITES,
     SONG_FAVOURITES,
-    SONG_REQUEST
+    SONG_REQUEST,
+    SOCKET_ENDPOINT
 )
 
 
@@ -17,16 +21,23 @@ class Client(object):
     """
     Client class to interface with listen.moe's API
     """
-    def __init__(self):
-        self._user_agent = "Listen (https://github.com/GetRektByMe/Listen)"
+    def __init__(self, loop: asyncio.BaseEventLoop = None):
+
         self._headers = {
-            "User-Agent": self._user_agent,
+            "User-Agent": "Listen (https://github.com/GetRektByMe/Listen)",
             "Content-Type": "application/json"
         }
 
+        self._loop = loop or asyncio.get_event_loop()
+        self._ws = None
+
     @property
-    def user_agent(self):
-        return self._user_agent
+    def loop(self):
+        return self._loop
+
+    @property
+    def headers(self):
+        return self._headers
 
     async def get_token(self, username: str, password: str):
         """
@@ -85,3 +96,18 @@ class Client(object):
             async with session.post(SONG_REQUEST, data=json.dumps({"song": song_id})) as response:
                 requested = await response.json()
                 return requested["success"]
+
+    async def get_websocket(self, authenticate: bool = False):
+        self.ws = await websockets.connect(SOCKET_ENDPOINT)
+        if authenticate:
+            await self.ws.send(json.dumps({"token": self.headers["authorization"]}))
+
+    async def recieve(self, printed: bool = False):
+        while True:
+            if printed:
+                print(await self.ws.recv())
+            else:
+                await self.ws.recv()
+
+    def run(self, printed: bool = False):
+        self.loop.run_until_complete(self.runner(printed))
