@@ -30,6 +30,7 @@ class Client(object):
 
         self._loop = loop or asyncio.get_event_loop()
         self._ws = None
+        self.ws_handler = None
 
     @property
     def loop(self):
@@ -102,12 +103,15 @@ class Client(object):
         if authenticate:
             await self.ws.send(json.dumps({"token": self.headers["authorization"]}))
 
-    async def recieve(self, printed: bool = False):
+    async def start(self):
         while True:
-            if printed:
-                print(await self.ws.recv())
+            if self.ws_handler:
+                await self.ws_handler(json.loads(await self.ws.recv()))
             else:
-                await self.ws.recv()
+                raise RuntimeError("No function handler specified")
 
-    def run(self, printed: bool = False):
-        self.loop.run_until_complete(self.runner(printed))
+    def register_handler(self, handler):
+        self.ws_handler = handler
+
+    def run(self):
+        self.loop.run_until_complete(self.start())
