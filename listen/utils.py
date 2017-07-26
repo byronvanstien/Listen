@@ -1,6 +1,6 @@
 from functools import wraps
 
-from .errors import KanaError
+from listen.errors import KanaError
 
 
 def ensure_token(func):
