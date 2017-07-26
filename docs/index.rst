@@ -1,20 +1,24 @@
-.. Listen documentation master file, created by
-   sphinx-quickstart on Tue Jul 25 20:50:58 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Listen's documentation!
 ==================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+About
+=====
+Listen is a fully asynchronous wrapper around the Listen.moe API that's built upon the websockets lib and aiohttp.
+The official supported versions of Python for this library are anything onwards from 3.5
 
+Installation
+============
+::
 
+    $ pip install git+https://github.com/GetRektByMe/Listen.git
 
-Indices and tables
-==================
+Master branch should always work, you can install dev branches by choice. **These may be broken**.
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Contents
+========
+
+.. toctree ::
+
+   api.rst
+   examples.rst
+   faq.rst

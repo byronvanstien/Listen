@@ -41,7 +41,9 @@ class Client(object):
         return self._headers
 
     async def get_token(self, username: str, password: str):
-        """
+        """|coro|\n
+        Get user token for the account you're using to sign in
+
         :param str username: The username of the account you're getting the token for
         :param str password: The password of the account you're getting the token for
         :rtype: str
@@ -56,7 +58,9 @@ class Client(object):
 
     @ensure_token
     async def get_info(self):
-        """
+        """|coro|\n
+        Get a user object that is associated with the logged in user
+
         :rtype: :class:`listen.objects.User`
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
@@ -65,8 +69,10 @@ class Client(object):
 
     @ensure_token
     async def get_favorites(self):
-        """
-        :rtype :class:`listen.objects.Song`
+        """|coro|\n
+        Get all favourites from the current logged in user
+
+        :rtype: :class:`listen.objects.Song`
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.get(USER_FAVOURITES) as response:
@@ -78,9 +84,11 @@ class Client(object):
 
     @ensure_token
     async def favorite_toggle(self, song_id: int):
-        """
+        """|coro|\n
+        Either favourites or unfavourites a song based on if it's favourited already
+
         :param int song_id: The id of the song you want to favourite
-        :rtype bool:
+        :rtype: bool
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.post(SONG_FAVOURITES, data=json.dumps({"song": song_id})) as response:
@@ -89,16 +97,24 @@ class Client(object):
 
     @ensure_token
     async def make_request(self, song_id: int):
-        """
+        """|coro|\n
+        Requests a song for queueing
+
         :param int song_id: The id of the song you want to request
-        :rtype bool:
+        :rtype: bool
         """
         with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.post(SONG_REQUEST, data=json.dumps({"song": song_id})) as response:
                 requested = await response.json()
                 return requested["success"]
 
-    async def get_websocket(self, authenticate: bool = False):
+    async def create_websocket_connection(self, authenticate: bool = False):
+        """|coro|\n
+        Creates a websocket connection to Listen.moe's socket API
+
+        :param bool authenticate: Boolean that decides if the authentication to the API is done
+        :rtype: None
+        """
         self.ws = await websockets.connect(SOCKET_ENDPOINT)
         if authenticate:
             await self.ws.send(json.dumps({"token": self.headers["authorization"]}))
@@ -111,7 +127,15 @@ class Client(object):
                 raise RuntimeError("No function handler specified")
 
     def register_handler(self, handler):
+        """
+        Registers a function handler to allow you to do something with the socket API data
+
+        :param function handler: A function that takes a dictionary that contains Listen.moe's API data
+        """
         self.ws_handler = handler
 
     def run(self):
+        """
+        Start the connection to the socket API
+        """
         self.loop.run_until_complete(self.start())

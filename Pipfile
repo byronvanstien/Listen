@@ -7,5 +7,5 @@ aiohttp = "*"
 websockets = "*"
 
 [dev-packages]
-sphinx_materialdesign_theme = "*"
 Sphinx = "*"
+sphinx_rtd_theme = "*"
