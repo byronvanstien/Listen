@@ -121,7 +121,7 @@ class Client(object):
         if authenticate:
             msg = {"op": 0, "d": {"auth": self.headers["authorization"]}}
         else:
-            msg = {"op": 0, "d": {"auth": "Bearer null"}}
+            msg = {"op": 0, "d": {"auth": ""}}
         await self.send_ws(msg)
 
     async def start(self):
