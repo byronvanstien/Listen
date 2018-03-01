@@ -1,5 +1,5 @@
 # Stuff related to the library
-LIBRARY_URL = "https://github.com/GetRektByMe/Listen"
+LIBRARY_URL = "https://github.com/Yarn/Listen"
 
 # Unrelated to anything we can use
 BASE_URL = "https://listen.moe/api/"
@@ -14,4 +14,4 @@ USER_FAVOURITES = BASE_URL + "user/favorites"
 SONG_FAVOURITES = BASE_URL + "songs/favorite"
 SONG_REQUEST = BASE_URL + "songs/request"
 
-SOCKET_ENDPOINT = "wss://listen.moe/api/v2/socket"
+SOCKET_ENDPOINT = "wss://listen.moe/gateway"

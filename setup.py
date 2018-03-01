@@ -11,7 +11,8 @@ from listen import (
 setup(
     name=title,
     version=version,
-    packages=find_packages("listen"),
+    # packages=find_packages("listen"),
+    packages=['listen'],
     url=LIBRARY_URL,
     license=license,
     author=author,

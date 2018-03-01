@@ -15,6 +15,7 @@ from listen.constants import (
     SONG_REQUEST,
     SOCKET_ENDPOINT
 )
+from listen.message import wrap_message
 
 
 class Client(object):
@@ -116,15 +117,42 @@ class Client(object):
         :rtype: None
         """
         self.ws = await websockets.connect(SOCKET_ENDPOINT)
+        
         if authenticate:
-            await self.ws.send(json.dumps({"token": self.headers["authorization"]}))
+            msg = {"op": 0, "d": {"auth": self.headers["authorization"]}}
+        else:
+            msg = {"op": 0, "d": {"auth": "Bearer null"}}
+        await self.send_ws(msg)
 
     async def start(self):
         while True:
             if self.ws_handler:
-                await self.ws_handler(json.loads(await self.ws.recv()))
+                data = json.loads(await self.ws.recv())
+                
+                if data['op'] == 0:
+                    heartbeat = data['d']['heartbeat'] / 1000
+                    self.loop.create_task(self._send_pings(heartbeat))
+                
+                if data['op'] == 10:
+                    # don't send pings to handler
+                    continue
+                
+                wrapped_message = wrap_message(data)
+                await self.ws_handler(wrapped_message)
             else:
                 raise RuntimeError("No function handler specified")
+    
+    async def send_ws(self, data):
+        json_data = json.dumps(data)
+        await self.ws.send(json_data)
+    
+    async def _send_pings(self, interval=45):
+        while True:
+            await asyncio.sleep(interval)
+            msg = {
+                'op': 9
+            }
+            await self.send_ws(msg)
 
     def register_handler(self, handler):
         """
@@ -138,4 +166,6 @@ class Client(object):
         """
         Start the connection to the socket API
         """
+        self.loop.run_until_complete(self.create_websocket_connection())
         self.loop.run_until_complete(self.start())
+        self.loop.close()
