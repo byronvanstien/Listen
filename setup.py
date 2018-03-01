@@ -28,5 +28,5 @@ setup(
         "Topic :: Software Development :: Libraries"
     ],
     keywords="aiohttp asyncio listen.moe",
-    install_requires=["aiohttp"],
+    install_requires=["aiohttp", "websockets"],
 )
