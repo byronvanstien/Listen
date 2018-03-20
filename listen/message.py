@@ -90,7 +90,7 @@ class SongUpdate(Message):
         for album in raw['d']['song']['albums']:
             self.albums.append(Album(album))
         for source in raw['d']['song']['sources']:
-            self.albums.append(Source(source))
+            self.sources.append(Source(source))
         for artist in raw['d']['song']['artists']:
             self.artists.append(Artist(artist))
     

@@ -116,7 +116,7 @@ class Client(object):
         :param bool authenticate: Boolean that decides if the authentication to the API is done
         :rtype: None
         """
-        self.ws = await websockets.connect(SOCKET_ENDPOINT)
+        self._ws = await websockets.connect(SOCKET_ENDPOINT)
         
         if authenticate:
             msg = {"op": 0, "d": {"auth": self.headers["authorization"]}}
@@ -125,9 +125,11 @@ class Client(object):
         await self.send_ws(msg)
 
     async def start(self):
+        if self._ws is None:
+            await self.create_websocket_connection()
         while True:
             if self.ws_handler:
-                data = json.loads(await self.ws.recv())
+                data = json.loads(await self._ws.recv())
                 
                 if data['op'] == 0:
                     heartbeat = data['d']['heartbeat'] / 1000
@@ -144,7 +146,7 @@ class Client(object):
     
     async def send_ws(self, data):
         json_data = json.dumps(data)
-        await self.ws.send(json_data)
+        await self._ws.send(json_data)
     
     async def _send_pings(self, interval=45):
         while True:
