@@ -3,6 +3,13 @@ An API wrapper for listen.moe built upon the websockets library and aiohttp.
 
 Currently only recieving song updates via websocket is tested/maintained.
 
+Targets python >3.5
+
+This project: https://github.com/Yarn/Listen
+This is essentially a rewrite of https://github.com/GetRektByMe/Listen
+
+The api provided is unstable and subject to change
+
 ---
 
 ## Install
@@ -33,15 +40,25 @@ cl.register_handler(hand)
 cl.run()
 ```
 
-if you already having something running on the event loop Client.run won't work
-
+if the event loop is already running you will need to
 replace `cl.run()` with
 ```python
-await cl.create_websocket_connection()
 cl.loop.create_task(cl.start())
 ```
 
 ---
 
-## Docs (out of date)
+# Docs (out of date)
+
+These are the docs for https://github.com/GetRektByMe/Listen
+
+The api has mostly changed so most of the documentation won't be applicable to this repo
+
 You can find our docs [here](http://listen.readthedocs.io/en/latest/)
+
+# Support
+
+Ping Nyar#3343 in the #development channel on the
+Listen.moe [discord](https://listen.moe/discord) or
+[open an issue](https://github.com/Yarn/Listen/issues)
+if you find a bug, need a new feature or want some documentation.

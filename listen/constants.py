@@ -15,3 +15,4 @@ SONG_FAVOURITES = BASE_URL + "songs/favorite"
 SONG_REQUEST = BASE_URL + "songs/request"
 
 SOCKET_ENDPOINT = "wss://listen.moe/gateway"
+KPOP_SOCKET_ENDPOINT = "wss://listen.moe/kpop/gateway"
