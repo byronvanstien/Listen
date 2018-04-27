@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 import aiohttp
 import websockets
 
-from listen.errors import ListenError, KanaError
+from listen.errors import ListenError, AuthError, KanaError
 from listen.objects import User, Song, Favorite
 from listen.utils import ensure_token
 from listen.message import wrap_message
@@ -28,6 +28,9 @@ class Client(object):
         self._ws = None
         self.ws_handler = None
         self._kpop = kpop
+        
+        self._websocket_url = 'wss://listen.moe/kpop/gateway' if kpop else 'wss://listen.moe/gateway'
+        self._base_url = 'https://listen.moe'
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -45,7 +48,7 @@ class Client(object):
         :param str password: The password of the account you're getting the token for
         :rtype: str
         """
-        url = 'https://listen.moe/api/login'
+        url = '{}/api/login'.format(self._base_url)
         
         async with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.post(url, json={"username": username, "password": password}) as response:
@@ -53,7 +56,7 @@ class Client(object):
                 # print(await response.text())
                 resp_data = await response.json()
                 if response.status != 200:
-                    raise ListenError(resp_data["message"])
+                    raise AuthError(resp_data["message"])
                 
                 # from pprint import pprint
                 # pprint(resp_data)
@@ -73,7 +76,7 @@ class Client(object):
             if not self._headers.get("authorization"):
                 raise KanaError("user_name is required when not logged in")
             user_name = '@me'
-        url = "https://listen.moe/api/users/{}".format(user_name)
+        url = "{}/api/users/{}".format(self._base_url, user_name)
         
         async with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.get(url) as response:
@@ -89,7 +92,7 @@ class Client(object):
 
         :rtype: :class:`listen.objects.Song`
         """
-        url = "https://listen.moe/api/favorites/@me"
+        url = "{}/api/favorites/@me".format(self._base_url)
         async with aiohttp.ClientSession(headers=self._headers) as session:
             async with session.get(url) as response:
                 # songs = []
@@ -125,7 +128,7 @@ class Client(object):
         pass
         async with aiohttp.ClientSession(headers=self._headers) as session:
             method = session.post if not remove else session.delete
-            async with method("https://listen.moe/api/favorites/{}".format(song_id)) as response:
+            async with method("{}/api/favorites/{}".format(self._base_url, song_id)) as response:
                 # print(response.status)
                 # print(await response.json())
                 if response.status != 204:
@@ -156,12 +159,7 @@ class Client(object):
         :param bool authenticate: Boolean that decides if the authentication to the API is done
         :rtype: None
         """
-        if self._kpop:
-            url = "wss://listen.moe/kpop/gateway"
-            # self._ws = await websockets.connect(KPOP_SOCKET_ENDPOINT)
-        else:
-            url = "wss://listen.moe/gateway"
-            # self._ws = await websockets.connect(SOCKET_ENDPOINT)
+        url = self._websocket_url
         
         self._ws = await websockets.connect(url)
         
