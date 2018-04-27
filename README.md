@@ -1,8 +1,6 @@
 # Listen
 An API wrapper for listen.moe built upon the websockets library and aiohttp.
 
-Currently only recieving song updates via websocket is tested/maintained.
-
 Targets python >3.5
 
 This project: https://github.com/Yarn/Listen
@@ -44,6 +42,11 @@ if the event loop is already running you will need to
 replace `cl.run()` with
 ```python
 cl.loop.create_task(cl.start())
+```
+
+you can get updates for kpop by setting `kpop=True`
+```python
+cl = listen.client.Client(kpop=True)
 ```
 
 ---
