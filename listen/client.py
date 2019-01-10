@@ -1,21 +1,22 @@
 import json
 import asyncio
 from typing import Optional, List, Dict
+import logging
 
 import aiohttp
-import websockets
 
 from listen.errors import ListenError, AuthError, KanaError
 from listen.objects import User, Song, Favorite
 from listen.utils import ensure_token
 from listen.message import wrap_message
 
+logger = logging.getLogger(__name__)
 
 class Client(object):
     """
     Client class to interface with listen.moe's API
     """
-    def __init__(self, *, kpop: bool = False, loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
+    def __init__(self, *, kpop: bool = False, loop: Optional[asyncio.AbstractEventLoop] = None, reconnect: bool = True) -> None:
 
         self._headers: Dict[str, str] = {
             "User-Agent": "Listen (https://github.com/Yarn/Listen)",
@@ -31,6 +32,8 @@ class Client(object):
         
         self._websocket_url = 'wss://listen.moe/kpop/gateway' if kpop else 'wss://listen.moe/gateway'
         self._base_url = 'https://listen.moe'
+        
+        self.reconnect = reconnect
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -161,7 +164,8 @@ class Client(object):
         """
         url = self._websocket_url
         
-        self._ws = await websockets.connect(url)
+        session = aiohttp.ClientSession(headers=self._headers)
+        self._ws = await session.ws_connect(url)
         
         if authenticate:
             msg = {"op": 0, "d": {"auth": self._headers["authorization"]}}
@@ -170,11 +174,32 @@ class Client(object):
         await self.send_ws(msg)
 
     async def start(self):
-        if self._ws is None:
-            await self.create_websocket_connection()
+        while True:
+            if self._ws is None:
+                await self.create_websocket_connection()
+            await self._recv_loop()
+            
+            if self.reconnect:
+                await asyncio.sleep(60)
+            else:
+                break
+    
+    async def _recv_loop(self):
         while True:
             if self.ws_handler:
-                data = json.loads(await self._ws.recv())
+                msg = await self._ws.receive()
+                
+                if msg.type == aiohttp.WSMsgType.TEXT:
+                    data = json.loads(msg.data)
+                elif msg.type == aiohttp.WSMsgType.ERROR:
+                    self._ws = None
+                    logger.warn("websocket error {}".format(msg.data))
+                    break
+                elif msg.type == aiohttp.WSMsgType.CLOSED:
+                    self._ws = None
+                    break
+                else:
+                    continue
                 
                 if data['op'] == 0:
                     heartbeat = data['d']['heartbeat'] / 1000
@@ -191,7 +216,7 @@ class Client(object):
     
     async def send_ws(self, data):
         json_data = json.dumps(data)
-        await self._ws.send(json_data)
+        await self._ws.send_str(json_data)
     
     async def _send_pings(self, interval=45):
         while True:
