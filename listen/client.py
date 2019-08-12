@@ -30,7 +30,7 @@ class Client(object):
         self.ws_handler = None
         self._kpop = kpop
         
-        self._websocket_url = 'wss://listen.moe/kpop/gateway' if kpop else 'wss://listen.moe/gateway'
+        self._websocket_url = 'wss://listen.moe/kpop/gateway_v2' if kpop else 'wss://listen.moe/gateway_v2'
         self._base_url = 'https://listen.moe'
         
         self.reconnect = reconnect
@@ -167,11 +167,11 @@ class Client(object):
         session = aiohttp.ClientSession(headers=self._headers)
         self._ws = await session.ws_connect(url)
         
-        if authenticate:
-            msg = {"op": 0, "d": {"auth": self._headers["authorization"]}}
-        else:
-            msg = {"op": 0, "d": {"auth": ""}}
-        await self.send_ws(msg)
+        # if authenticate:
+        #     msg = {"op": 0, "d": {"auth": self._headers["authorization"]}}
+        # else:
+        #     msg = {"op": 0, "d": {"auth": ""}}
+        # await self.send_ws(msg)
 
     async def start(self):
         while True:
