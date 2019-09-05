@@ -1,2 +1,1 @@
-aiohttp
-websockets
+aiohttp~=3.1.3

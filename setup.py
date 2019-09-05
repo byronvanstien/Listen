@@ -11,7 +11,8 @@ from listen import (
 setup(
     name=title,
     version=version,
-    packages=find_packages("listen"),
+    # packages=find_packages("listen"),
+    packages=['listen'],
     url=LIBRARY_URL,
     license=license,
     author=author,
@@ -27,5 +28,5 @@ setup(
         "Topic :: Software Development :: Libraries"
     ],
     keywords="aiohttp asyncio listen.moe",
-    install_requires=["aiohttp"],
+    install_requires=["aiohttp", "websockets"],
 )
